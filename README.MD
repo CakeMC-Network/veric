@@ -69,7 +69,7 @@ fun main() {
 }
 ```
 ### OUTPUT: 
-```json
+```
 string = "Hello, World!"
 integer = 100
 double = 123.123
@@ -95,7 +95,7 @@ object = {
 ```
 
 ### Another example:
-```json
+```
 test = {
   name = "tom"
   age = 21
