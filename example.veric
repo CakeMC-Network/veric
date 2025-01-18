@@ -1,0 +1,20 @@
+string = "Hello, World!"
+integer = 100
+double = 123.123
+float = 12345.0
+long = 1111111111111111111
+char = 'A'
+boolean = true
+list = [
+"first" 
+"last" 
+"third" 
+]
+object = {
+name = "Hi"
+age = 21
+activity = [
+"gaming" 
+"music" 
+]
+}
