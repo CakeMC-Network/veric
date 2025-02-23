@@ -12,19 +12,19 @@ fun main() {
     veric.setInteger("integer", 100)
     veric.setDouble("double", 123.123)
     veric.setFloat("float", 12345F)
-    veric.setLong("long", 1111111111111111111L)
+    veric.setLong("long", 111111111111111111L)
     veric.setChar("char", 'A')
     veric.setBoolean("boolean", true)
 
     // lists:
     val list = listOf("first", "last", "third")
-    veric.setList("list", list)
+    //veric.setList("list", list)
 
     // objects "endless" nesting possible (object in object in....)
     val complex = Veric()
     complex.setString("name", "Hi")
     complex.setInteger("age", 21)
-    complex.setList("activity", listOf("gaming", "music"))
+    //complex.setList("activity", listOf("gaming", "music"))
 
     veric.setObject("object", complex)
 

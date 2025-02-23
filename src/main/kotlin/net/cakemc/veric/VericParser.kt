@@ -1,8 +1,12 @@
 package net.cakemc.veric
 
 import net.cakemc.veric.entry.*
+import net.cakemc.veric.error.ErrorUtil
 
-class VericParser(private val stream: TokenStream) {
+class VericParser(
+    private val content : String,
+    private val stream: TokenStream
+) {
     fun parse(): Veric {
         val objects: MutableList<VericElement<*>> = ArrayList()
         while (stream.remaining() != 0) {
@@ -38,20 +42,49 @@ class VericParser(private val stream: TokenStream) {
             Token.Type.NULL -> VericNull(key)
             Token.Type.L_SQUARE -> parseList(key)
             Token.Type.L_CURLY -> parseObject(key)
-            else -> throw IllegalStateException("unexpected token: ${current.value} expected identifier")
+            else -> throw IllegalStateException(ErrorUtil.createFullError(
+                current.syntaxPosition, content, "unexpected token: ${current.value} expected identifier")
+            )
         }
     }
 
     fun parseList(key: String): VericElement<*> {
-        val elements: MutableList<Token> = ArrayList()
+        val elements: MutableList<VericElement<*>> = ArrayList()
         while (!stream.`is`(Token.Type.R_SQUARE)) {
-            elements.add(stream.token()!!)
-            stream.advance()
+            elements.add(this.parseUnKeyedObject())
         }
 
         if (stream.`is`(Token.Type.R_SQUARE)) stream.advance()
 
-        return VericList(key, elements)
+        return VericList(elements, key)
+    }
+
+    fun  parseUnKeyedObject(): VericElement<*> {
+        val current = stream.token()
+        val insideValues: MutableList<VericElement<*>> = ArrayList()
+
+        if (stream.`is`(Token.Type.IDENTIFIER)) {
+            while (!stream.`is`(Token.Type.R_CURLY)) {
+                val expected = stream.token()
+                stream.advance()
+
+                if (expected!!.`is`(Token.Type.IDENTIFIER)) {
+                    insideValues.add(parseEntry(expected.value))
+                } else {
+                    throw IllegalStateException(ErrorUtil.createFullError(
+                        expected.syntaxPosition, content, "unexpected token: ${expected.value} expected identifier")
+                    )
+                }
+            }
+
+            if (stream.`is`(Token.Type.R_CURLY)) stream.advance()
+        } else {
+            throw IllegalStateException(ErrorUtil.createFullError(
+                current!!.syntaxPosition, content, "unexpected token: ${current.value} expected identifier")
+            )
+        }
+
+        return VericObject("un-keyed", insideValues)
     }
 
     fun parseObject(key: String): VericElement<*> {
@@ -66,13 +99,17 @@ class VericParser(private val stream: TokenStream) {
                 if (expected!!.`is`(Token.Type.IDENTIFIER)) {
                     insideValues.add(parseEntry(expected.value))
                 } else {
-                    throw IllegalStateException("unexpected token: ${expected.value} expected identifier")
+                    throw IllegalStateException(ErrorUtil.createFullError(
+                        expected.syntaxPosition, content, "unexpected token: ${expected.value} expected identifier")
+                    )
                 }
             }
 
             if (stream.`is`(Token.Type.R_CURLY)) stream.advance()
         } else {
-            throw IllegalStateException("unexpected token: ${current!!.value} expected identifier")
+            throw IllegalStateException(ErrorUtil.createFullError(
+                current!!.syntaxPosition, content, "unexpected token: ${current.value} expected identifier")
+            )
         }
 
         return VericObject(key, insideValues)

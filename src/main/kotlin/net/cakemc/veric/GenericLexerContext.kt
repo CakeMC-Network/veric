@@ -39,6 +39,7 @@ open class GenericLexerContext<T>(protected val whitespace: T) {
     }
 
     fun toImmutable(): GenericLexerContext<T> {
+        this.rules.reverse()
         return ImmutableGenericContext(this, whitespace)
     }
 

@@ -1,6 +1,5 @@
 package net.cakemc.veric
 
-import net.cakemc.veric.GenericLexerContext.LexerRule
 import java.util.function.Consumer
 
 object Lexer {
@@ -20,20 +19,20 @@ object Lexer {
             .addRule(Token.Type.DOUBLE) { i -> i.addRegex("[0-9]+(\\.[0-9]+)?[dD]?") }
             .addRule(Token.Type.FLOAT) { i -> i.addRegex("[0-9]+(\\.[0-9]+)?[fF]") }
 
-            .addRule(Token.Type.LONG, Consumer { i ->
+            .addRule(Token.Type.LONG) { i ->
                 i.addRegexes(
                     "0x[0-9a-fA-F]+[Ll]",
                     "0b[0-1]+[Ll]",
                     "[0-9]+[Ll]"
                 )
-            })
-            .addRule(Token.Type.INT, Consumer { i ->
+            }
+            .addRule(Token.Type.INT) { i ->
                 i.addRegexes(
                     "0x[0-9a-fA-F]+",
                     "0b[0-1]+",
                     "[0-9]+"
                 )
-            })
+            }
 
             .addRule(Token.Type.NULL) { i -> i.addString("null") } // Memory operations
 

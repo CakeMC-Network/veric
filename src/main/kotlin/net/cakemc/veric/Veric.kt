@@ -13,9 +13,9 @@ class Veric(
     companion object {
 
         fun readFromBytes(byteArray: ByteArray): AbstractVeric {
-            val lexer = LexerTokenizer.parse(byteArray)
+            val lexer = LexerTokenizer.parse("unknown file", byteArray)
             val stream = TokenStream.wrap(lexer)
-            val parser = VericParser(stream)
+            val parser = VericParser(String(byteArray), stream)
 
             return parser.parse()
         }
@@ -110,6 +110,7 @@ class Veric(
         )
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun <T> getRaw(key: String): VericElement<T> {
         return elements.stream().filter { element: VericElement<*> ->
             (element.key()
@@ -117,8 +118,15 @@ class Veric(
         }.findFirst().orElse(null) as VericElement<T>
     }
 
-    override fun getList(key: String?): List<Any> {
-        return listOf()
+    override fun getList(key: String): MutableList<VericElement<*>> {
+        val element: VericElement<*> = getRaw<Any>(key)
+        check(element.type() != VericType.NULL) { "key: $key is not present in context!" }
+
+        if (element is VericList) {
+            return element.value()
+        } else throw IllegalStateException(
+            "invalid type for key: $key expected: '${VericType.LIST}' but got: '${element.key()}'"
+        )
     }
 
     override fun getObject(key: String): AbstractVeric {
@@ -132,7 +140,7 @@ class Veric(
         )
     }
 
-    @Deprecated("")
+    @Deprecated("NULL")
     override fun getNull(key: String): Any? {
         val element: VericElement<*> = getRaw<Any>(key)
         check(element.type() != VericType.NULL) { "key: $key is not present in context!" }
@@ -185,12 +193,36 @@ class Veric(
         elements.add(VericCharacter(key, value.toString()))
     }
 
-    override fun setRaw(key: String?, value: VericElement<*>) {
+    override fun setRaw(key: String, value: VericElement<*>) {
+        elements.add(value)
+    }
+
+    override fun setList(key: String, value: VericList) {
         elements.add(value)
     }
 
     override fun setList(key: String, value: List<Any>) {
-        elements.add(VericList(value, key))
+        val list = ArrayList<VericElement<*>>()
+
+        value.forEach {
+            when (it) {
+                Int -> list.add(VericInt(it.toString(), "list-$key"))
+                Long -> list.add(VericLong(it.toString(), "list-$key"))
+                Double -> list.add(VericDouble(it.toString(), "list-$key"))
+                Float -> list.add(VericFloat(it.toString(), "list-$key"))
+                Boolean -> list.add(VericBoolean(it.toString(), "list-$key"))
+                Char -> list.add(VericCharacter(it.toString(), "list-$key"))
+                String -> list.add(VericString(it.toString(), "list-$key"))
+
+                // internal
+                is AbstractVeric -> list.add(VericObject("list-$key", it))
+                is VericElement<*> -> list.add(it)
+
+                else -> list.add(VericNull("list-$key")) // todo object serialisation
+             }
+        }
+
+        this.elements.add(VericList(list, key))
     }
 
     override fun setObject(key: String, value: AbstractVeric) {
@@ -211,9 +243,9 @@ class Veric(
     }
 
     override fun readFromBytes(byteArray: ByteArray): AbstractVeric {
-        val lexer = LexerTokenizer.parse(byteArray)
+        val lexer = LexerTokenizer.parse("unknown file", byteArray)
         val stream = TokenStream.wrap(lexer)
-        val parser = VericParser(stream)
+        val parser = VericParser(String(byteArray), stream)
 
         return parser.parse()
     }

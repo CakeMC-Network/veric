@@ -1,17 +1,17 @@
 package net.cakemc.veric
 
-import net.cakemc.veric.GenericLexerContext.LexerToken
+import net.cakemc.veric.error.ErrorUtil
 import java.nio.charset.StandardCharsets
 
 object LexerTokenizer {
     @JvmStatic
-    fun parse(bytes: ByteArray): List<Token> {
-        val tokenList = parseKeepWhitespace(bytes)
+    fun parse(file: String, bytes: ByteArray): List<Token> {
+        val tokenList = parseKeepWhitespace(file, bytes)
         tokenList.removeIf { token: Token -> token.type == Token.Type.WHITESPACE }
         return tokenList
     }
 
-    fun parseKeepWhitespace(bytes: ByteArray): MutableList<Token> {
+    fun parseKeepWhitespace(file: String, bytes: ByteArray): MutableList<Token> {
         val text = String(bytes, StandardCharsets.UTF_8)
         val tokenList: MutableList<Token> = ArrayList()
         var offset = 0
@@ -25,8 +25,7 @@ object LexerTokenizer {
 
             val lexerToken = Lexer.LEXER.nextToken(input)
                 ?: throw RuntimeException(
-                    "Could not parse token: " +
-                            SyntaxPosition.Companion.of(startPos, startPos)
+                    ErrorUtil.createFullError(SyntaxPosition.of(file, startPos, startPos), String(bytes), "could not parse token")
                 )
 
             if (lexerToken.length + offset > length) {
@@ -49,7 +48,7 @@ object LexerTokenizer {
                 Token(
                     lexerToken.type,
                     lexerToken.content,
-                    SyntaxPosition.Companion.of(startPos, endPos)
+                    SyntaxPosition.of(file, startPos, endPos)
                 )
             )
 

@@ -1,6 +1,7 @@
 package net.cakemc.veric
 
 import net.cakemc.veric.entry.VericElement
+import net.cakemc.veric.entry.VericList
 import net.cakemc.veric.io.FileReadWrite
 
 abstract class AbstractVeric protected constructor(
@@ -15,7 +16,7 @@ abstract class AbstractVeric protected constructor(
     abstract fun getBoolean(key: String): Boolean
     abstract fun getString(key: String): String
     abstract fun getChar(key: String): Char
-    abstract fun getList(key: String?): List<Any>
+    abstract fun getList(key: String): MutableList<VericElement<*>>
     abstract fun getObject(key: String): AbstractVeric
 
     @Deprecated("")
@@ -29,7 +30,8 @@ abstract class AbstractVeric protected constructor(
     abstract fun setBoolean(key: String, value: Boolean)
     abstract fun setString(key: String, value: String?)
     abstract fun setChar(key: String, value: Char)
-    abstract fun setRaw(key: String?, value: VericElement<*>)
+    abstract fun setRaw(key: String, value: VericElement<*>)
+    abstract fun setList(key: String, value: VericList)
     abstract fun setList(key: String, value: List<Any>)
     abstract fun setObject(key: String, value: AbstractVeric)
 

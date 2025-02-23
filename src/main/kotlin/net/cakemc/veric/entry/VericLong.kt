@@ -25,7 +25,7 @@ class VericLong : VericElement<Long> {
     }
 
     override fun toFormatedVericString(): String {
-        return "$key = $value"
+        return "$key = $value" + "L"
     }
 
     override fun value(): Long {

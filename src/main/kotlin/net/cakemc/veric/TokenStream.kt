@@ -10,9 +10,9 @@ class TokenStream private constructor(private val list: List<Token>) {
         if (!list.isEmpty()) {
             val t1 = list[list.size - 1]
             val end = t1.syntaxPosition.end
-            this.end = Token(Token.Type.EOF, SyntaxPosition.Companion.of(end, end))
+            this.end = Token(Token.Type.EOF, SyntaxPosition.of("unknown file" , end, end))
         } else {
-            this.end = Token(Token.Type.EOF, SyntaxPosition.Companion.empty())
+            this.end = Token(Token.Type.EOF, SyntaxPosition.empty())
         }
     }
 
